@@ -45,6 +45,16 @@ class TranscriptCacheTest(unittest.TestCase):
         load.assert_called_once_with("tiny")
         self.assertEqual([w["text"] for w in words], ["bonjour"])
 
+    def test_a_model_id_or_folder_stays_in_the_cache_folder(self):
+        cache = Path("work") / "words-clip.json"
+        for model in ("Systran/faster-whisper-small", "C:\\models\\small", "/models/small"):
+            with mock.patch.dict(os.environ, {"EASYEDIT_WHISPER": model}):
+                path = transcribe.cache_for(cache, None)
+            self.assertEqual(path.parent, cache.parent)
+            self.assertRegex(path.name, r"^words-clip-en-[A-Za-z0-9._-]+\.json$")
+        with mock.patch.dict(os.environ, {"EASYEDIT_WHISPER": "distil-large-v3"}):
+            self.assertEqual(transcribe.cache_for(cache, None).name, "words-clip-en-distil-large-v3.json")
+
 
 class PickIsCurrentTest(unittest.TestCase):
     def test_a_quote_from_another_transcript_is_not_reused(self):

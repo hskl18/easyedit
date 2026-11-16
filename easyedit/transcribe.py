@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 
 from .util import log, read_json, write_json
@@ -42,7 +43,8 @@ def model_name(language: str | None = None) -> str:
 
 def cache_for(cache: Path, language: str | None = None) -> Path:
     """The transcript cache file for this language and Whisper model, so a change to either re-transcribes."""
-    return cache.with_name(f"{cache.stem}-{language or 'en'}-{model_name(language)}{cache.suffix}")
+    model = re.sub(r"[^A-Za-z0-9._-]", "_", model_name(language))  # Hugging Face ids and folder paths hold /, \ and :
+    return cache.with_name(f"{cache.stem}-{language or 'en'}-{model}{cache.suffix}")
 
 
 def transcribe(media: Path, cache: Path, language: str | None = None) -> list[dict]:

@@ -60,8 +60,6 @@ An NVIDIA GPU is optional (NVENC encoding, CUDA Whisper). A first run downloads 
 python -m unittest discover
 ```
 
-The README currently says `python -m pytest`. That's wrong — pytest isn't in `requirements.txt` and the one existing test uses `unittest`. Fixing that is an open issue; until then use the command above.
-
 - Keep changes small and focused. One fix or feature per pull request.
 - Check UI changes in a real browser and add a screenshot or GIF.
 - There is no linter or formatter. Match the style of the file you are editing.

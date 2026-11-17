@@ -141,7 +141,7 @@ thumbnail to watch the edit in the browser.
 **Design from a picture** turns an imported PNG, JPEG or WebP (up to 25 MB) into a poster built from that
 picture's own colors and light (`POST /api/design`, implemented in `easyedit/design.py`).
 
-Set `EASYEDIT_PORT` to use a different port.
+Set `EASYEDIT_PORT` to use a different port. `python -m easyedit.web --no-browser` starts the server without opening your browser.
 
 **Connect** shows which AI accounts are signed in and checks this computer's tools. Its buttons open the sign-in
 for Claude or Codex. **Give it to your bot** has copy-ready prompts for an agent.
@@ -173,8 +173,12 @@ python -m easyedit "Scarface" --no-render             # build footage + edit.js 
 | `--hero-length` | `3.4` | seconds of the final black-and-white shot |
 | `--language` | `en` | speech language (non-English uses whisper `large-v3`) |
 | `--cookies-from-browser` | | for age-restricted YouTube clips, e.g. `chrome` |
+| `--draft` | | 30fps draft-quality render |
+| `--no-render` | | stop after building the footage and `edit.js` |
+| `--preview` | | `START END`: render only that range, in seconds |
 | `--fresh` | | re-plan and re-pick instead of reusing the cache |
 | `-o, --output` | | write the finished MP4 to this path |
+| `-h, --help` | | list these options and exit |
 
 Every stage caches its results in `jobs/<movie>/`: downloads, transcripts, shot and beat analysis, `plan.json`,
 `quote.json` and `sources.json` (which pins the chosen downloads, since YouTube search results drift).
@@ -250,8 +254,18 @@ easyedit/
   skill.py      installs the Claude Code skill
 template/       index.html + film.js: every visual effect, as a function of time
 skills/         the /easyedit skill for Claude Code
-tests/          unit tests (python -m pytest)
+tests/          unit tests (python -m unittest discover)
 AGENTS.md       the playbook for AI agents
+batch_edit.py   runs easyedit for every movie in a list file, one at a time
+                (python batch_edit.py titles.txt), with QA checks, render and disk cleanup
+plans/          hand-written plans; batch_edit.py copies plans/<slug>.json into a job
+                that has no plan yet
+titles.txt      movie lists for batch_edit.py, one title per line (also fixes.txt,
+                fixes2.txt)
+fix_quotes.py   a one-off helper that wrote the hand-picked quote spans in quotes-config.json
+                into quote.json
+finish_three.py a one-off helper that hand-finished three edits: corrected sources,
+                rebuild, render, verify
 ```
 
 ## Contributors

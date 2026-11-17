@@ -151,6 +151,19 @@ def output_of(job: Path) -> Path | None:
     return final_output(job)
 
 
+_probes: dict[Path, tuple[tuple[float, int], dict]] = {}
+
+
+def probe_of(out: Path) -> dict:
+    # /api/jobs runs every three seconds; re-probe only an output whose mtime or size changed.
+    st = out.stat()
+    key = (st.st_mtime, st.st_size)
+    cached = _probes.get(out)
+    if not cached or cached[0] != key:
+        cached = _probes[out] = (key, probe(out))
+    return cached[1]
+
+
 def thumb_of(job: Path) -> Path | None:
     out = output_of(job)
     if not out:
@@ -243,7 +256,7 @@ def job_info(job: Path) -> dict:
     }
     if out:
         try:
-            meta = probe(out)
+            meta = probe_of(out)
             info["duration"] = round(meta["duration"], 1)
             info["size"] = round(out.stat().st_size / 2**20)
         except Exception:

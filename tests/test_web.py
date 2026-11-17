@@ -303,6 +303,23 @@ class StartJobTest(unittest.TestCase):
 class JobInfoTest(unittest.TestCase):
     def tearDown(self):
         web._runs.clear()
+        web._probes.clear()
+
+    def test_job_info_probes_an_unchanged_output_once(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            job = Path(tmp_dir).resolve() / "probed"
+            job.mkdir()
+            out = job / "probed.mp4"
+            out.write_bytes(b"one")
+
+            with mock.patch.object(web, "probe", side_effect=[{"duration": 1.0}, {"duration": 2.0}]) as probe:
+                first = web.job_info(job)
+                second = web.job_info(job)
+                out.write_bytes(b"re-rendered")
+                third = web.job_info(job)
+
+            self.assertEqual(probe.call_count, 2)
+            self.assertEqual([first["duration"], second["duration"], third["duration"]], [1.0, 1.0, 2.0])
 
     def test_job_info_closes_fh_when_process_finished(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
